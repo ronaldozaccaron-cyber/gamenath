@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Matemática - Batalha na Escola</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#1b1a2b;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none;font-family:monospace;color:#fff;overscroll-behavior:none}
+#app{height:100dvh;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+#hud{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 4px;gap:6px}
+.sd{font-size:12px;font-weight:bold;letter-spacing:1px}
+.sd span{display:block;font-size:17px;letter-spacing:0;margin-top:2px;white-space:nowrap}
+.sd.r{text-align:right}
+#hn span{color:#e0457b}#hr span{color:#00eaff}
+.sd i{font-style:normal;opacity:.22}
+#mid{text-align:center;font-size:12px;color:#f2c14e}#mid b{display:block;font-size:22px;color:#fff}
+#st{display:flex;align-items:center;justify-content:space-between;padding:0 12px 6px;font-size:14px;color:#cfc8e8;gap:8px}
+#st b{color:#f2c14e;font-size:16px}
+#cb{color:#ff9f43;font-weight:bold;min-width:52px;text-align:center}
+#mu{background:#4a4468;border:0;border-radius:6px;color:#fff;font-size:16px;padding:6px 12px;box-shadow:0 3px #2c2842}
+#arena{position:relative;border:solid #f2c14e;border-width:3px 0;background:#2b2547;display:flex;justify-content:center}
+#cv{width:100%;aspect-ratio:128/80;max-height:36dvh;object-fit:contain;image-rendering:pixelated}
+#pop{position:absolute;left:0;right:0;top:38%;text-align:center;font-size:30px;font-weight:bold;pointer-events:none;opacity:0;text-shadow:3px 3px #000}
+#pop.go{animation:up 1s ease-out}
+@keyframes up{0%{opacity:1;transform:translateY(10px) scale(.6)}20%{transform:translateY(0) scale(1.2)}100%{opacity:0;transform:translateY(-40px)}}
+#arena.sk{animation:sk .3s}
+@keyframes sk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#tb{height:10px;background:#2c2842;margin:8px 12px 0;border-radius:5px;overflow:hidden}
+#tf{display:block;height:100%;background:#3aa876;width:100%}
+#q{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:clamp(34px,11vw,52px);font-weight:bold;text-shadow:3px 3px #000;padding:4px 12px}
+#q small{font-size:20px;color:#f2c14e;text-shadow:none;margin-top:6px}
+#q .m{font-size:clamp(20px,6vw,28px)}
+#ans{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:12px;padding:0 12px calc(14px + env(safe-area-inset-bottom));height:34dvh}
+#ans button{font:bold clamp(28px,9vw,44px) monospace;border:0;border-radius:8px;background:#f2c14e;color:#1f1a33;box-shadow:0 6px #c2952a}
+#ans button:active{transform:translateY(6px);box-shadow:0 0 #c2952a}
+#ans button.ok{background:#3aa876;color:#fff;box-shadow:0 6px #22704f}
+#ans button.x{background:#d9534f;color:#fff;box-shadow:0 6px #8f2f2c;opacity:.55}
+#ov{position:fixed;inset:0;background:rgba(20,14,36,.9);display:none;align-items:center;justify-content:center;padding:16px;z-index:5}
+.card{width:100%;max-width:420px;background:#1f1a33;border:3px solid #f2c14e;border-radius:8px;padding:18px;text-align:center;box-shadow:0 8px 16px rgba(0,0,0,.5);line-height:1.4;font-size:15px}
+.card h1{margin:0;font-size:34px;color:#f2c14e;text-shadow:3px 3px #000}
+.card h1.w{color:#3aa876}.card h1.l{color:#d9534f}
+.sb{color:#00eaff;font-weight:bold;letter-spacing:2px}
+.g{display:grid;grid-template-columns:1fr auto;gap:6px 12px;text-align:left;margin:12px 0;font-size:16px}
+.g b{color:#f2c14e;text-align:right}
+.b{display:block;width:100%;min-height:58px;margin-top:12px;font:bold 20px monospace;border:0;border-radius:6px;background:#f2c14e;color:#1f1a33;box-shadow:0 4px #c2952a}
+.b:active{transform:translateY(4px);box-shadow:0 0 #c2952a}
+.b.n{background:#4a4468;color:#fff;box-shadow:0 4px #2c2842;font-size:16px;min-height:50px}
+</style></head><body>
+<div id="app">
+ <div id="hud">
+  <div class="sd" id="hn">NATASHA<span id="hpn"></span></div>
+  <div id="mid">TEMPO<b id="tm">00:00</b></div>
+  <div class="sd r" id="hr">ROBÔ<span id="hpr"></span></div>
+ </div>
+ <div id="st"><span>PTS <b id="sc">0</b></span><span>✔ <b id="ok">0</b></span><span>✖ <b id="er">0</b></span><span id="cb"></span><button id="mu">🔊</button></div>
+ <div id="arena"><canvas id="cv" width="128" height="80"></canvas><div id="pop"></div></div>
+ <div id="tb"><i id="tf"></i></div>
+ <div id="q"></div>
+ <div id="ans"></div>
+</div>
+<div id="ov"></div>
+<script>
+const $=i=>document.getElementById(i),c=$('cv').getContext('2d');
+const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const sh=a=>{for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+//GEN
+function opts(r,h){const s=new Set([r]);for(const x of sh([1,-1,2,-2,10,-10,3,-3,h,-h].filter(x=>x))){if(s.size>=4)break;if(r+x>=0)s.add(r+x)}while(s.size<4)s.add(r+ri(3,20));return sh([...s])}
+function gen(L){let a,b,d,t,r;const k=ri(0,99);
+ if(L<=2){if(L==2&&k<40){a=ri(6,15);b=ri(1,a-1);t=a+' − '+b;r=a-b}else{a=ri(1,L*5+4);b=ri(1,L*5+4);t=a+' + '+b;r=a+b}}
+ else if(L<=4){if(k<50){a=ri(10,40+L*5);b=ri(5,30);t=a+' + '+b;r=a+b}else{a=ri(15,60);b=ri(3,a-5);t=a+' − '+b;r=a-b}}
+ else if(L<=6){if(k<65){a=ri(2,L+4);b=ri(2,9);t=a+' × '+b;r=a*b}else if(k<83){a=ri(40,99);b=ri(20,a-1);t=a+' − '+b;r=a-b}else{a=ri(30,80);b=ri(20,60);t=a+' + '+b;r=a+b}}
+ else if(L<=8){if(k<40){a=ri(6,12);b=ri(4,12);t=a+' × '+b;r=a*b}else if(k<70){b=ri(2,10);d=ri(2,12);a=b*d;t=a+' ÷ '+b;r=d}else if(k<85){a=ri(60,150);b=ri(30,90);t=a+' + '+b;r=a+b}else{a=ri(80,200);b=ri(30,a-10);t=a+' − '+b;r=a-b}}
+ else{if(k<35){a=ri(5,40);b=ri(2,9);d=ri(2,9);t=a+' + '+b+' × '+d;r=a+b*d}else if(k<70){a=ri(10,30);b=ri(1,a-1);d=ri(2,6);t='('+a+' − '+b+') × '+d;r=(a-b)*d}else{b=ri(3,12);d=ri(6,15);a=b*d;t=a+' ÷ '+b;r=d}}
+ return{t,a:r,o:opts(r,ri(1,9))}}
+//ENDGEN
+const MAXHP=7;
+const PN={h:'#c9a26a',s:'#fce0b8',e:'#2a1408',m:'#c0574f',p:'#e0457b',b:'#2b3a7a',w:'#f4f4f4'};
+const PR={g:'#7a8a99',G:'#a8b4c2',d:'#3a424c',c:'#00eaff',k:'#0a0a0f'};
+const NAT=["...hhhhhh...","..hhhhhhhh..",".hhhhhhhhhh.",".hhsssssshh.",".hhsesseshh.",".hhssmmsshh.",".hh.ssss.hh.",".hhpppppphh.",".hpppppppph.",".spppppppps.","..pppppppp..","..bbbbbbbb..","..bbbbbbbb..","..bbb..bbb..","..bbb..bbb..","..bbb..bbb..",".wwww..wwww.",".wwww..wwww."];
+const ROB=[".....cc.....",".....dd.....","..GGGGGGGG..",".GggggggggG.",".GgkkggkkgG.",".GgkcggkcgG.",".GgkkggkkgG.",".GggggggggG.",".GgddddddgG.","..GGGGGGGG..","...dddddd...",".ggGGGGGGgg.",".gGgccccgGg.",".gGggddggGg.",".dGGGGGGGGd.","..dddddddd..","..ddd..ddd..",".dddd..dddd."];
+let mut=false,AC,btns=[],rec=0,G={state:'menu',round:0,L:1,hn:MAXHP,hr:MAXHP,t:0,score:0,ok:0,er:0,combo:0},N={hurt:0,jump:0},R={hurt:0,jump:0};
+try{rec=+localStorage.getItem('mat_rec')||0}catch(e){}
+const au=new Audio('matematica.mp3');au.loop=true;au.volume=.5;
+function sfx(f,d=.12,ty='square',sl=0,v=.08){if(mut)return;try{AC=AC||new(window.AudioContext||webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime;o.type=ty;o.frequency.setValueAtTime(f,n);if(sl)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+sl),n+d);g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(n+d)}catch(e){}}
+const fmt=t=>String(t/60|0).padStart(2,'0')+':'+String(t%60|0).padStart(2,'0');
+function pop(t,col){const e=$('pop');e.textContent=t;e.style.color=col;e.className='';void e.offsetWidth;e.className='go'}
+function hud(){$('hpn').innerHTML='♥'.repeat(G.hn)+'<i>'+'♥'.repeat(MAXHP-G.hn)+'</i>';$('hpr').innerHTML='▮'.repeat(G.hr)+'<i>'+'▮'.repeat(MAXHP-G.hr)+'</i>';
+ $('sc').textContent=G.score;$('ok').textContent=G.ok;$('er').textContent=G.er;$('tm').textContent=fmt(G.t);$('cb').textContent=G.combo>1?'🔥x'+G.combo:''}
+function ov(h){const o=$('ov');o.innerHTML='<div class="card">'+h+'</div>';o.style.display='flex'}
+function back(){history.length>1?history.back():location.href='1.html'}
+function menu(){ov('<h1>MATEMÁTICA</h1><p class="sb">BATALHA NA ESCOLA</p><p>Natasha desafia o robô! Ache a resposta certa <b>antes dele</b> para tirar 1 ▮ de energia. Erros custam pontos e tempo. Se seus ♥ acabarem, o robô vence!</p><p>Recorde: <b style="color:#f2c14e">'+rec+'</b></p><button class="b" id="go">JOGAR</button><button class="b n" id="bk">VOLTAR À CIDADE</button>');$('go').onclick=start;$('bk').onclick=back}
+function start(){$('ov').style.display='none';G={state:'wait',round:0,L:1,hn:MAXHP,hr:MAXHP,score:0,ok:0,er:0,combo:0,best:0,t:0,wt:1,fx:null,ls:0};
+ N.hurt=N.jump=R.hurt=R.jump=0;$('q').innerHTML='<span class="m">PREPARAR!</span>';$('ans').innerHTML='';$('tf').style.width='100%';
+ au.volume=.5;au.currentTime=0;if(!mut)au.play().catch(()=>{});hud()}
+function newRound(){G.round++;const L=G.L=Math.min(9,G.round),q=G.q=gen(L);
+ G.qmax=G.qt=Math.max(8,12-G.round*.4);
+ G.rTot=G.rt=Math.max(2.2,8-.5*(L-1)+Math.random()*2-.8);
+ G.rMiss=Math.random()<.2-.014*L;G.rOut=0;G.state='play';
+ $('q').textContent=q.t+' = ?';
+ const a=$('ans');a.innerHTML='';
+ btns=q.o.map(v=>{const b=document.createElement('button');b.textContent=v;b.onpointerdown=e=>{e.preventDefault();pick(b,v)};a.appendChild(b);return b});hud()}
+function pick(b,v){if(G.state!=='play'||b.disabled)return;
+ if(v===G.q.a)return endRound('p');
+ b.disabled=true;b.className='x';G.er++;G.combo=0;G.score=Math.max(0,G.score-30);G.qt=Math.max(.3,G.qt-1);
+ sfx(160,.25,'sawtooth',-60);pop('-30','#d9534f');hud()}
+function endRound(w){G.state='between';G.wt=1.8;let m;
+ btns.forEach(b=>{b.disabled=true;if(+b.textContent===G.q.a)b.className='ok'});
+ if(w==='p'){G.ok++;G.combo++;G.best=Math.max(G.best,G.combo);const p=100+Math.ceil(G.qt*10)+(G.combo-1)*25;G.score+=p;G.hr--;G.fx={dir:1,t:0};N.jump=.6;
+  m=G.combo>1?'COMBO x'+G.combo+'!':'ACERTOU!';pop('+'+p,'#f2c14e');sfx(660,.08);setTimeout(()=>sfx(880,.14),80)}
+ else if(w==='r'){G.hn--;G.combo=0;G.fx={dir:-1,t:0};R.jump=.6;m='O ROBÔ FOI MAIS RÁPIDO!';sfx(200,.3,'sawtooth',-80)}
+ else{G.er++;G.combo=0;m='TEMPO ESGOTADO!';sfx(160,.3,'sawtooth',-60)}
+ $('q').innerHTML='<span class="m">'+m+'</span><small>'+G.q.t+' = '+G.q.a+'</small>';hud()}
+function finish(){G.state='end';G.win=G.hr<=0;if(G.win)G.score+=G.hn*100;
+ const nr=G.score>rec;if(nr){rec=G.score;try{localStorage.setItem('mat_rec',rec)}catch(e){}}
+ hud();au.volume=.25;
+ (G.win?[523,659,784,1046]:[400,330,262,196]).forEach((f,i)=>setTimeout(()=>sfx(f,.18,'square',0,.09),i*150));
+ setTimeout(()=>{ov('<h1 class="'+(G.win?'w':'l')+'">'+(G.win?'VITÓRIA!':'DERROTA')+'</h1><p>'+(G.win?'Natasha venceu o robô!':'O robô foi mais rápido desta vez...')+'</p><div class="g"><span>PONTOS</span><b>'+G.score+'</b><span>ACERTOS</span><b>'+G.ok+'</b><span>ERROS</span><b>'+G.er+'</b><span>TEMPO</span><b>'+fmt(G.t)+'</b><span>MELHOR COMBO</span><b>x'+G.best+'</b><span>RECORDE</span><b>'+rec+'</b></div>'+(nr?'<p class="sb">★ NOVO RECORDE! ★</p>':'')+'<button class="b" id="go">JOGAR DE NOVO</button><button class="b n" id="bk">VOLTAR À CIDADE</button>');$('go').onclick=start;$('bk').onclick=back},1000)}
+function upd(dt){
+ for(const v of[N,R]){v.hurt=Math.max(0,v.hurt-dt);v.jump=Math.max(0,v.jump-dt)}
+ const f=G.fx;if(f){f.t+=dt;if(f.t>=.4&&!f.d){f.d=1;(f.dir>0?R:N).hurt=.5;sfx(280,.2,'square',-200);const a=$('arena');a.classList.remove('sk');void a.offsetWidth;a.classList.add('sk')}if(f.t>.9)G.fx=null}
+ const s=G.state;
+ if(s==='play'){G.t+=dt;G.qt-=dt;G.rt-=dt;
+  if(!G.rOut&&G.rt<=0){if(G.rMiss){G.rOut=1;pop('ROBÔ ERROU!','#00eaff');sfx(120,.3,'sawtooth',-40)}else return endRound('r')}
+  if(G.qt<=0)return endRound(0);
+  const p=Math.max(0,G.qt/G.qmax),tf=$('tf');tf.style.width=p*100+'%';tf.style.background=p<.3?'#d9534f':'#3aa876';
+  if((G.t|0)!==G.ls){G.ls=G.t|0;$('tm').textContent=fmt(G.t)}
+ }else if(s==='wait'||s==='between'){G.wt-=dt;if(G.wt<=0){if(s==='between'&&(G.hr<=0||G.hn<=0))finish();else newRound()}}
+ else if(s==='end'){const w=G.win?N:R;if(!w.jump)w.jump=.6}}
+function spr(rows,pal,x,y,u,fl){rows.forEach((r,j)=>{for(let i=0;i<r.length;i++){const k=r[i];if(k==='.')continue;c.fillStyle=fl?'#fff':pal[k];c.fillRect(x+i*u,y+j*u,u,u)}})}
+function chr(v,rows,pal,x,ph,t){const dx=v.hurt>0?(Math.floor(t*30)%2?2:-2):0,fl=v.hurt>0&&Math.floor(t*16)%2,jh=v.jump>0?Math.round(Math.sin((1-v.jump/.6)*Math.PI)*6):0;
+ c.fillStyle='rgba(0,0,0,.3)';c.fillRect(x+2,72,20,3);spr(rows,pal,x+dx,36-jh-(jh?0:Math.floor(t*3+ph)%2),2,fl)}
+function draw(t){
+ c.fillStyle='#2b2547';c.fillRect(0,0,128,52);
+ c.fillStyle='#342d55';for(let x=0;x<128;x+=16)c.fillRect(x,0,8,40);
+ c.fillStyle='#4a3a6e';c.fillRect(0,40,128,12);c.fillStyle='#f2c14e';c.fillRect(0,40,128,1);
+ c.fillStyle='#5b4a7a';c.fillRect(0,52,128,28);
+ c.fillStyle='#4d3f6b';for(let y=52,r=0;y<80;y+=7,r++)for(let x=(r%2)*8;x<128;x+=16)c.fillRect(x,y,8,7);
+ c.fillStyle='#a3632a';c.fillRect(22,2,84,25);c.fillStyle='#2f5a48';c.fillRect(24,4,80,21);c.fillStyle='#d9cdbd';c.fillRect(30,27,68,2);
+ const mn=G.state==='menu';c.textAlign='center';c.fillStyle='#e8f0e0';
+ c.font='bold 9px monospace';c.fillText(mn?'MATEMÁTICA':'RODADA '+G.round,64,14);
+ c.font='6px monospace';c.fillText(mn?'BATALHA NA ESCOLA':'NÍVEL '+G.L,64,22);
+ chr(N,NAT,PN,16,0,t);chr(R,ROB,PR,88,1,t);
+ if(G.state==='play'){if(G.rOut){c.fillStyle='#ffdb59';c.font='bold 9px monospace';c.fillText('?!',100,33)}
+  else{const p=Math.min(1,Math.max(0,1-G.rt/G.rTot));c.fillStyle='#3a424c';c.fillRect(88,31,24,3);c.fillStyle='#00eaff';c.fillRect(88,31,Math.round(24*p),3)}}
+ const f=G.fx;if(f&&f.t<.4){const p=f.t/.4,x=f.dir>0?42+44*p:86-44*p;
+  c.fillStyle=f.dir>0?'#ffdb59':'#00eaff';c.fillRect(x-3,53,6,2);c.fillRect(x-1,51,2,6);c.fillStyle='#fff';c.fillRect(x-1,53,2,2)}}
+let last=0;function loop(ms){const t=ms/1000,dt=Math.min(.1,t-last);last=t;upd(dt);draw(t);requestAnimationFrame(loop)}
+$('mu').onclick=()=>{mut=!mut;au.muted=mut;$('mu').textContent=mut?'🔇':'🔊'};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)au.pause();else if(!mut&&G.state!=='menu')au.play().catch(()=>{})});
+document.addEventListener('contextmenu',e=>e.preventDefault());
+hud();menu();requestAnimationFrame(loop);
+</script></body></html>

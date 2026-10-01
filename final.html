@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obrigado por Jogar! ❤️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Fredoka:wght@500;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', 'Poppins', sans-serif;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .font-cursive {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        /* Gradient mesh animation background */
+        .gradient-bg {
+            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #fda085, #f6d365);
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Floating elements animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(3deg); }
+        }
+
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Heart Pulse Animation */
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(244, 63, 94, 0.4)); }
+            50% { transform: scale(1.12); filter: drop-shadow(0 0 25px rgba(244, 63, 94, 0.8)); }
+        }
+
+        .animate-pulse-glow {
+            animation: pulseGlow 2.5s ease-in-out infinite;
+        }
+
+        /* Click Heart Particle */
+        .click-heart {
+            position: fixed;
+            pointer-events: none;
+            font-size: 24px;
+            z-index: 9999;
+            animation: popAndFade 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        @keyframes popAndFade {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+            }
+            50% {
+                transform: translate(-50%, -80px) scale(1.4) rotate(15deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -130px) scale(1) rotate(-15deg);
+            }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen w-screen flex items-center justify-center relative overflow-hidden text-gray-800 p-4">
+
+    <!-- Background Canvas for Floating Particles & Hearts -->
+    <canvas id="bgCanvas" class="absolute inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- Main Center Card -->
+    <main class="relative z-10 w-full max-w-lg">
+        <div class="glass-card rounded-3xl p-8 sm:p-12 text-center transform transition-all hover:scale-[1.01] duration-500 animate-float">
+            
+            <!-- Heart Badge Icon -->
+            <div class="mb-6 inline-block relative">
+                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-rose-100/80 flex items-center justify-center mx-auto shadow-inner animate-pulse-glow">
+                    <span class="text-5xl sm:text-6xl select-none">💖</span>
+                </div>
+                <span class="absolute -bottom-2 -right-2 text-2xl animate-bounce">✨</span>
+            </div>
+
+            <!-- Main Title -->
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-3 tracking-tight leading-tight">
+                Obrigado por jogar esse jogo!
+            </h1>
+
+            <!-- Cursive Sweet Subtitle -->
+            <p class="font-cursive text-3xl sm:text-4xl text-rose-600 my-4 transform -rotate-2 drop-shadow-sm">
+                Fiz de coração pra você, ok? ❤️
+            </p>
+
+            <p class="text-sm sm:text-base text-gray-600 font-light max-w-xs mx-auto mb-8 leading-relaxed">
+                Cada pedacinho desse jogo foi feito com muito carinho e dedicação. Espero que tenha divertido você!
+            </p>
+
+            <!-- Interactive Action Button -->
+            <div class="flex flex-col items-center gap-3">
+                <button id="celebrateBtn" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-rose-500 via-pink-500 to-amber-400 hover:from-rose-600 hover:via-pink-600 hover:to-amber-500 text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-pink-300/50 transform active:scale-95 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 group">
+                    <span>Clique aqui e festeje</span>
+                    <span class="text-2xl group-hover:rotate-12 group-hover:scale-125 transition-transform duration-300">🎉</span>
+                </button>
+                
+                <p class="text-xs text-gray-500 italic mt-2">
+                    💡 Dica: Toque ou clique em qualquer lugar da tela!
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Celebration Message Toast -->
+    <div id="partyToast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md border border-pink-300 text-pink-700 px-7 py-4 rounded-full shadow-2xl flex items-center gap-3 opacity-0 pointer-events-none transition-all duration-500 transform translate-y-6 z-50 text-center max-w-[90vw]">
+        <span class="text-2xl animate-bounce">🥳</span>
+        <span class="font-semibold text-sm sm:text-base">Você é incrível! Obrigado pelo carinho! 🥳 ✨</span>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        // Floating Heart / Particle Object
+        class FloatingParticle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = height + Math.random() * 100;
+                this.size = Math.random() * 16 + 10;
+                this.speedY = Math.random() * 1.2 + 0.5;
+                this.speedX = Math.sin(Math.random() * Math.PI * 2) * 0.8;
+                this.opacity = Math.random() * 0.5 + 0.3;
+                this.rotation = Math.random() * 360;
+                this.rotSpeed = (Math.random() - 0.5) * 1.5;
+                this.isHeart = Math.random() > 0.4; // 60% chance of being a heart
+                this.color = ['#f43f5e', '#ec4899', '#f472b6', '#a855f7', '#fb7185'][Math.floor(Math.random() * 5)];
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += Math.sin(this.y * 0.01) * 0.5 + this.speedX;
+                this.rotation += this.rotSpeed;
+
+                if (this.y < -50) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.globalAlpha = this.opacity;
+
+                if (this.isHeart) {
+                    // Draw Heart shape
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    const topCurveHeight = this.size * 0.3;
+                    ctx.moveTo(0, topCurveHeight);
+                    ctx.bezierCurveTo(0, 0, -this.size / 2, 0, -this.size / 2, topCurveHeight);
+                    ctx.bezierCurveTo(-this.size / 2, (this.size + topCurveHeight) / 2, 0, this.size, 0, this.size);
+                    ctx.bezierCurveTo(0, this.size, this.size / 2, (this.size + topCurveHeight) / 2, this.size / 2, topCurveHeight);
+                    ctx.bezierCurveTo(this.size / 2, 0, 0, 0, 0, topCurveHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // Soft glow circle particle
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size / 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // Initialize Floating Particles
+        const particles = Array.from({ length: 35 }, () => new FloatingParticle());
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        function playCuteSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, index) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + index * 0.08);
+
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime + index * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + index * 0.08 + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start(ctx.currentTime + index * 0.08);
+                    osc.stop(ctx.currentTime + index * 0.08 + 0.35);
+                });
+            } catch (e) {
+                // Audio context suppressed or unsupported
+            }
+        }
+
+        // Celebrate Button Action
+        const celebrateBtn = document.getElementById('celebrateBtn');
+        const partyToast = document.getElementById('partyToast');
+        let toastTimeout;
+
+        celebrateBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            // Multi-stage Celebration Confetti Explosion
+            const count = 200;
+            const defaults = { origin: { y: 0.7 } };
+
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio)
+                }));
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55, colors: ['#f43f5e', '#ec4899', '#fbbf24'] });
+            fire(0.2, { spread: 60, colors: ['#a855f7', '#3b82f6', '#34d399'] });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: ['#fb7185', '#f43f5e'] });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+
+            // Burst hearts & sparkles around the screen
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const randomX = window.innerWidth * (0.2 + Math.random() * 0.6);
+                    const randomY = window.innerHeight * (0.3 + Math.random() * 0.4);
+                    spawnHeart(randomX, randomY);
+                }, i * 80);
+            }
+
+            // Play sound chime
+            playCuteSound();
+
+            // Show Toast Message
+            partyToast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-6');
+            partyToast.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                partyToast.classList.remove('opacity-100', 'translate-y-0');
+                partyToast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-6');
+            }, 4000);
+        });
+
+        // Interactive Click/Touch Heart & Sparkle Trail Effect
+        const hearts = ['❤️', '💖', '💕', '💗', '✨', '🌸', '🥳', '🎉', '⭐'];
+
+        function spawnHeart(x, y) {
+            const heart = document.createElement('div');
+            heart.className = 'click-heart select-none';
+            heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+            heart.style.left = `${x}px`;
+            heart.style.top = `${y}px`;
+
+            document.body.appendChild(heart);
+
+            setTimeout(() => {
+                heart.remove();
+            }, 1200);
+        }
+
+        window.addEventListener('click', (e) => {
+            spawnHeart(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                spawnHeart(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+    </script>
+</body>
+</html>

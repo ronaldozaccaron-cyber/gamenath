@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Sudoku - Papelaria</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:linear-gradient(#141b3a,#0b1020);overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none;font-family:monospace;color:#e8ecff;overscroll-behavior:none}
+#app{height:100dvh;display:flex;flex-direction:column;align-items:center;padding-top:env(safe-area-inset-top);--s:max(270px,min(calc(100vw - 28px),calc(100dvh - 340px)))}
+#top{width:100%;display:flex;align-items:center;gap:10px;padding:8px 12px 4px}
+#mc{width:80px;height:72px;image-rendering:pixelated;flex:none}
+#tt{flex:1;font-size:28px;font-weight:bold;color:#f2c14e;text-shadow:3px 3px #000;line-height:1}
+#tt small{display:block;font-size:14px;color:#7fb4ff;text-shadow:none;letter-spacing:2px;margin-top:6px}
+.ib{background:#141c3a;border:2px solid #2c3a6b;border-radius:10px;color:#fff;font-size:20px;width:48px;height:48px;box-shadow:0 4px #060a16}
+.ib:active{transform:translateY(4px);box-shadow:none}
+#st{width:var(--s);display:flex;justify-content:space-between;padding:4px 2px 6px;font-size:13px;color:#8f9bc8}
+#st b{color:#f2c14e;font-size:17px}
+#bd{flex:none;width:var(--s);height:var(--s);margin:6px auto;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));border:3px solid #f2c14e;border-radius:6px;overflow:hidden;background:#0a0f1e;box-shadow:0 6px 0 #a87d1f,0 12px 24px rgba(0,0,0,.5)}
+.c{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;border:1px solid #232d52;font-size:calc(var(--s)/9*.6);font-weight:bold;line-height:1;background:#0d1428;color:#f2c14e}
+.c.br{border-right:3px solid #6f7bb0}.c.bb{border-bottom:3px solid #6f7bb0}
+.c.v{color:#e8ecff;background:#111a36}
+.c.h{background:#16213f}.c.v.h{background:#1a2647}
+.c.n{background:#1d3b4a}
+.c.w{background:#4a1f2e;color:#ff7b7b}
+.c.s{background:#2c3a6b;box-shadow:inset 0 0 0 2px #f2c14e}.c.s.w{color:#ff7b7b}
+#pk{width:var(--s);margin:14px auto 0;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;transition:opacity .15s}
+#pk:not(.on){opacity:.4;pointer-events:none}
+#pk button{height:clamp(48px,calc(var(--s)/5.4),66px);font:bold 26px monospace;border:2px solid #2c3a6b;border-radius:10px;background:#141c3a;color:#e8ecff;box-shadow:0 4px #060a16}
+#pk button:active{transform:translateY(4px);box-shadow:none;background:#2c3a6b}
+#pk button:disabled{opacity:.25}
+#pk .er{color:#ff9a8a}
+#ov{position:fixed;inset:0;background:rgba(20,14,36,.92);display:none;align-items:center;justify-content:center;padding:16px;z-index:5;overflow:auto}
+.card{width:100%;max-width:420px;background:#1f1a33;border:3px solid #f2c14e;border-radius:8px;padding:18px;text-align:center;box-shadow:0 8px 16px rgba(0,0,0,.5);line-height:1.4;font-size:15px}
+.card h1{margin:0;font-size:34px;color:#f2c14e;text-shadow:3px 3px #000}
+.sb{color:#3a85b3;font-weight:bold;letter-spacing:2px;margin:6px 0}
+.g{display:grid;grid-template-columns:1fr auto;gap:6px 12px;text-align:left;margin:12px 0;font-size:16px}
+.g b{color:#f2c14e}
+.b{display:block;width:100%;min-height:54px;margin-top:10px;font:bold 20px monospace;border:0;border-radius:6px;background:#f2c14e;color:#1f1a33;box-shadow:0 4px #c2952a}
+.b:active{transform:translateY(4px);box-shadow:0 0 #c2952a}
+.b.n{background:#4a4468;color:#fff;box-shadow:0 4px #2c2842;font-size:16px;min-height:48px}
+#nw{image-rendering:pixelated;width:120px;height:120px}
+</style></head><body>
+<div id="app">
+ <div id="top"><canvas id="mc" width="40" height="36"></canvas><div id="tt">SUDOKU<small id="df">FÁCIL</small></div><button class="ib" id="mu">🔊</button><button class="ib" id="mn">☰</button></div>
+ <div id="st"><span>TEMPO <b id="tm">00:00</b></span><span>ERROS <b id="er">0</b></span><span>FALTAM <b id="rm">0</b></span></div>
+ <div id="bd"></div>
+ <div id="pk"></div>
+</div>
+<div id="ov"></div>
+<script>
+const $=i=>document.getElementById(i);
+const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const sh=a=>{for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+//GEN
+const pc=m=>{let n=0;while(m){m&=m-1;n++}return n};
+function cand(g,i){let m=0,r=i/9|0,c=i%9,br=r-r%3,bc=c-c%3;for(let k=0;k<9;k++){m|=(1<<g[r*9+k])|(1<<g[k*9+c])|(1<<g[(br+(k/3|0))*9+bc+k%3])}return ~m&0x3fe}
+function cnt(g,lim,rand,sol){let b=-1,bm=0,bn=10;
+ for(let i=0;i<81;i++)if(!g[i]){const m=cand(g,i),n=pc(m);if(n<bn){bn=n;b=i;bm=m;if(n<2)break}}
+ if(b<0){if(sol&&!sol.length)sol.push(...g);return 1}
+ if(!bn)return 0;const vs=[];for(let v=1;v<=9;v++)if(bm>>v&1)vs.push(v);if(rand)sh(vs);
+ let t=0;for(const v of vs){g[b]=v;t+=cnt(g,lim-t,rand,sol);g[b]=0;if(t>=lim)break}return t}
+function make(target){const sol=[];cnt(Array(81).fill(0),1,true,sol);const p=sol.slice();let clues=81;
+ for(const i of sh([...Array(81).keys()])){if(clues<=target)break;const v=p[i];p[i]=0;if(cnt(p.slice(),2)!==1)p[i]=v;else clues--}
+ return{p,sol}}
+//ENDGEN
+const DF=[['FÁCIL',44],['MÉDIO',36],['DIFÍCIL',30],['MESTRE',26]];
+const PN={h:'#c9a26a',s:'#fce0b8',e:'#2a1408',m:'#c0574f',p:'#e0457b',b:'#2b3a7a',w:'#f4f4f4'};
+const NAT=["...hhhhhh...","..hhhhhhhh..",".hhhhhhhhhh.",".hhsssssshh.",".hhsesseshh.",".hhssmmsshh.",".hh.ssss.hh.",".hhpppppphh.",".hpppppppph.",".spppppppps.","..pppppppp..","..bbbbbbbb..","..bbbbbbbb..","..bbb..bbb..","..bbb..bbb..","..bbb..bbb..",".wwww..wwww.",".wwww..wwww."];
+let D=0,SOL=[],cur=[],giv=[],sel=-1,errs=0,t=0,run=0,mut=false,AC,flash=0,tick=0,wi=0;
+const cells=[];let rec={};
+try{rec=JSON.parse(localStorage.getItem('sdk_rec')||'{}')}catch(e){}
+const au=new Audio('sudoku.mp3');au.loop=true;au.volume=.5;
+function sfx(f,d=.1,ty='square',sl=0,v=.08){if(mut)return;try{AC=AC||new(window.AudioContext||webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime;o.type=ty;o.frequency.setValueAtTime(f,n);if(sl)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+sl),n+d);g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(n+d)}catch(e){}}
+const fmt=s=>String(s/60|0).padStart(2,'0')+':'+String(s%60|0).padStart(2,'0');
+function spr(c,x,y,u,fl){NAT.forEach((r,j)=>{for(let i=0;i<12;i++){const k=r[i];if(k!=='.'){c.fillStyle=fl?'#fff':PN[k];c.fillRect(x+i*u,y+j*u,u,u)}}})}
+function mascot(){const c=$('mc').getContext('2d');c.clearRect(0,0,40,36);spr(c,0,-(tick%2),2,flash>0);
+ const P=['#3a2010','#3a2010','#e8c090','#e8c090','#f2c14e','#f2c14e','#f2c14e','#f2c14e','#f2c14e','#e0457b'];
+ P.forEach((k,i)=>{c.fillStyle=k;c.fillRect(27+i,30-i,2,2)})}
+const bd=$('bd');
+for(let i=0;i<81;i++){const d=document.createElement('div'),r=i/9|0,cc=i%9;d.className='c';d.onpointerdown=e=>{e.preventDefault();tap(i)};bd.appendChild(d);cells.push(d)}
+const pk=$('pk');
+pk.innerHTML=[1,2,3,4,5,6,7,8,9].map(n=>'<button data-n="'+n+'">'+n+'</button>').join('')+'<button class="er" data-n="0">⌫</button>';
+pk.querySelectorAll('[data-n]').forEach(b=>b.onpointerdown=e=>{e.preventDefault();put(+b.dataset.n)});
+function render(){let left=0;const cn=Array(10).fill(0);
+ for(let i=0;i<81;i++){const r=i/9|0,c=i%9,v=cur[i];if(!v)left++;else cn[v]++;
+  let k='c'+(c%3==2&&c<8?' br':'')+(r%3==2&&r<8?' bb':'');
+  if(giv[i])k+=' v';else if(v)k+=v===SOL[i]?' p':' w';
+  if(sel>=0){const sr=sel/9|0,sc=sel%9;if(i===sel)k+=' s';else if(cur[sel]&&v===cur[sel])k+=' n';else if(r===sr||c===sc||((r/3|0)===(sr/3|0)&&(c/3|0)===(sc/3|0)))k+=' h'}
+  cells[i].className=k;cells[i].textContent=v||''}
+ pk.classList.toggle('on',run&&sel>=0&&!giv[sel]);$('rm').textContent=left;$('er').textContent=errs;$('tm').textContent=fmt(t);
+ pk.querySelectorAll('[data-n]').forEach(b=>{const n=+b.dataset.n;if(n)b.disabled=cn[n]>=9})}
+function tap(i){if(!run)return;sel=sel===i?-1:i;sfx(520,.05);render()}
+function put(v){if(!run||sel<0||giv[sel])return;
+ if(v===0){cur[sel]=0;sfx(300,.08)}
+ else{cur[sel]=v;if(v!==SOL[sel]){errs++;flash=3;sfx(160,.25,'sawtooth',-60)}else{sfx(660,.07);setTimeout(()=>sfx(880,.09),70)}}
+ render();
+ if(cur.every((x,i)=>x===SOL[i]))win()}
+function ov(h){$('ov').innerHTML='<div class="card">'+h+'</div>';$('ov').style.display='flex'}
+function closeOv(){$('ov').style.display='none';clearInterval(wi)}
+function back(){history.length>1?history.back():location.href='1.html'}
+function menu(cont){
+ ov('<h1>SUDOKU</h1><p class="sb">NA PAPELARIA</p><p>Toque numa casa e escolha o número. Cada linha, coluna e quadrado 3×3 leva de 1 a 9, sem repetir.</p>'+DF.map((d,i)=>'<button class="b" data-d="'+i+'">'+d[0]+(rec[i]?' · '+fmt(rec[i]):'')+'</button>').join('')+(cont?'<button class="b n" id="ct">CONTINUAR</button>':'')+'<button class="b n" id="bk">VOLTAR À CIDADE</button>');
+ document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>start(+b.dataset.d));
+ if(cont)$('ct').onclick=closeOv;$('bk').onclick=back}
+function start(d){D=d;closeOv();const g=make(DF[d][1]);SOL=g.sol;cur=g.p.slice();giv=g.p.map(v=>v>0);sel=-1;errs=0;t=0;run=1;
+ $('df').textContent=DF[d][0];au.volume=.5;if(!mut)au.play().catch(()=>{});render()}
+function win(){run=0;sel=-1;render();au.volume=.25;
+ const nr=!rec[D]||t<rec[D];if(nr){rec[D]=t;try{localStorage.setItem('sdk_rec',JSON.stringify(rec))}catch(e){}}
+ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>sfx(f,.18,'square',0,.09),i*150));
+ setTimeout(()=>{ov('<h1>RESOLVIDO!</h1><p class="sb">'+DF[D][0]+'</p><canvas id="nw" width="40" height="40"></canvas><div class="g"><span>TEMPO</span><b>'+fmt(t)+'</b><span>ERROS</span><b>'+errs+'</b><span>MELHOR TEMPO</span><b>'+fmt(rec[D])+'</b></div>'+(nr?'<p class="sb">★ NOVO RECORDE! ★</p>':'')+'<button class="b" id="ag">JOGAR DE NOVO</button><button class="b n" id="bk">VOLTAR À CIDADE</button>');
+  $('ag').onclick=()=>menu(0);$('bk').onclick=back;
+  const c=$('nw').getContext('2d');let f=0;wi=setInterval(()=>{f++;c.clearRect(0,0,40,40);const j=Math.round(Math.abs(Math.sin(f*.5))*6);
+   c.fillStyle='#f2c14e';[[3,4],[34,8],[6,20],[33,26]].forEach(([x,y],i)=>{if((f+i)%3)c.fillRect(x,y,2,2)});spr(c,8,2+6-j,2,0)},110)},900)}
+setInterval(()=>{tick++;if(flash>0)flash--;mascot()},300);
+setInterval(()=>{if(run&&!document.hidden&&$('ov').style.display!=='flex'){t++;$('tm').textContent=fmt(t)}},1000);
+$('mn').onclick=()=>menu(run);
+$('mu').onclick=()=>{mut=!mut;au.muted=mut;$('mu').textContent=mut?'🔇':'🔊'};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)au.pause();else if(!mut&&run)au.play().catch(()=>{})});
+document.addEventListener('contextmenu',e=>e.preventDefault());
+mascot();menu(0);
+</script></body></html>
